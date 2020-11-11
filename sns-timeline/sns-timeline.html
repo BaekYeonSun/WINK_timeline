@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="kr">
+<head>
+    <meta charset="UTF-8">
+    <title>SNS timeline</title>
+    <style>
+        .sns {
+            background-color: #ddd;
+        }
+        .container {
+            background-color: #fff;
+            padding: 15px;
+            margin: 20px;
+            border-radius: 30px;
+        }
+        textarea {
+            width: 88%;
+            height: 80px;
+            margin-top: 10px;
+            margin-left: 10px;
+            font-size: 12pt;
+            border-color: transparent;
+            background-color: transparent;
+        }
+        button {
+            margin-left: 5px;
+            background-color: #eee;
+        }
+        img {
+            width: 50px;
+            height: 50px;
+            float: left;
+            padding: 17px;
+        }
+        h2 {
+            float: left;
+            margin-top: 25px;
+            padding-right: 100px;
+        }
+        p {
+            padding: 15px;
+            margin-top: 15px;
+            font-size: 17px;
+        }
+    </style>
+</head>
+<body class="sns">
+    <h1 class="title" align="center">SNS TIMELINE</h1>
+    <div class="container">
+        <textarea placeholder="내용을 입력하세요."></textarea>
+        <button onclick="postClick()">등록하기</button>
+    </div>
+
+    <div id="timeline">
+        <div class="container">
+            <img class="img" src="./image/profile.jpg">
+            <h2>작성자</h2>
+            <p>내용</p>
+        </div>
+    </div>
+
+    <script>
+        let postInput = document.querySelector("textarea");
+        let timeline = document.querySelector('#timeline');
+
+        window.onload = async () => {
+            const postResponse = await fetch('http://ec2-52-78-131-251.ap-northeast-2.compute.amazonaws.com/feed/',{
+                method:'get',
+            });
+            const posts = await postResponse.json();
+
+            for (let i=0; i<posts.length; i++){
+                console.log(posts[i]);
+                post(posts[i].owner, posts[i].content);
+            }
+        }
+
+        const postClick = async () => {
+            if(postInput.value == "") alert("내용을 작성해주세요.");
+
+            post('owner', postInput.value);
+
+            await fetch('http://ec2-52-78-131-251.ap-northeast-2.compute.amazonaws.com/feed/',{
+                method:'post',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    content: postInput.value,
+                    owner: "owner",
+                }),
+            });
+
+            postInput.value = "";
+        };
+
+        const post = (name, description) => {
+            let container = document.createElement('div');
+            let profile = document.createElement('img');
+            let owner = document.createElement('h2');
+            let content = document.createElement('p');
+            profile.src = "./image/profile.jpg"
+            owner.appendChild(document.createTextNode(name));
+            content.appendChild(document.createTextNode(description));
+
+            container.setAttribute('class', 'container');
+            container.appendChild(profile);
+            container.appendChild(owner);
+            container.appendChild(content);
+
+            timeline.appendChild(container);
+        };
+    </script>
+</body>
+</html>
